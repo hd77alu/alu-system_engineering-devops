@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# duplicate web-01 to web-02
+
+apt-get update
+apt-get install -y nginx 
+
+# allowing nginx on firewall
+sudo ufw allow 'Nginx HTTP'
+
+# create directories if not present
+for dir in /var/www/{html,error}; do
+	if ! [ -d "$dir" ]; then
+		mkdir -p "$dir"
+	fi
+done
+
+# creating new index
+echo "Holberton School" > /var/www/html/index.html
+
+# create new error page
+echo "Ceci n'est pas une page" > /var/www/html/error_404.html
+
+# backup default server config file
+sudo cp /etc/nginx/sites-enabled/default nginx-sites-enabled_default.backup
+
+server_config=\
+"server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html
+    server_name_;
+    add_header X-Served-By \$hostname;
+    location / {
+      try_files \$uri \$uri/ =404;
+    }
+    if (\$request_filename ~ redirect_me){
+      rewrite ^ https://th3-gr00t.tk/ permanent;
+    }
+    error_page 404 /error_404.html;
+    location = /error_404.html {
+      internal;
+    }
+}"
+
+# Restarting nginx
+sudo service nginx restart
