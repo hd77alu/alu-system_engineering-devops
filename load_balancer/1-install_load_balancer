@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# install load balancer
+
+sudo apt-get -y update
+sudo apt-get -y install haproxy #install haproxy
+
+# Change ownerchip to user
+sudo chown $USER:USER /etc/haproxy/haproxy.cfg
+
+# Web Servers
+cat <<EOF > /etc/haproxy/haproxy.cfg
+
+defaults
+  mode http
+  timeout client 15s
+  timeout connect 10s
+  timeout server 15s
+  timeout http-request 10s
+
+frontend hamed-alfatih
+bind *:80
+mode http
+default_backend app
+
+backend app
+balance roundrobin
+server 6533-web-01 44.203.100.132:80 check
+server 6533-web-02 3.83.116.176:80 check
+EOF
+
+# Restart
+sudo service haproxy restart
