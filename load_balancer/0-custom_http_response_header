@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 # duplicate web-01 to web-02
 
-apt-get update
-apt-get install -y nginx 
+sudo apt-get update
+sudo apt-get install -y nginx 
 
 # allowing nginx on firewall
+sudo apt-get install ufw
 sudo ufw allow 'Nginx HTTP'
-
-# create directories if not present
-for dir in /var/www/{html,error}; do
-	if ! [ -d "$dir" ]; then
-		mkdir -p "$dir"
-	fi
-done
 
 # creating new index
 echo "Holberton School" > /var/www/html/index.html
@@ -20,11 +14,10 @@ echo "Holberton School" > /var/www/html/index.html
 # create new error page
 echo "Ceci n'est pas une page" > /var/www/html/error_404.html
 
-# backup default server config file
-sudo cp /etc/nginx/sites-enabled/default nginx-sites-enabled_default.backup
+# default server config file
 
-server_config=\
-"server {
+cat <<EOF > /etc/nginx/sites-enabled/default
+server {
     listen 80 default_server;
     listen [::]:80 default_server;
     root /var/www/html;
@@ -41,7 +34,8 @@ server_config=\
     location = /error_404.html {
       internal;
     }
-}"
+}
+EOF
 
 # Restarting nginx
 sudo service nginx restart
